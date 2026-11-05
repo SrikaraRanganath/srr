@@ -6,15 +6,19 @@ class Media(db.Model):
     __tablename__ = 'media'
     
     media_id = db.Column(db.String(36), primary_key=True)
-    type = db.Column(ENUM('TRIP', 'ITINERARY'), nullable=False)
-    trip_id = db.Column(db.String(36), db.ForeignKey('trip.trip_id'), nullable=True)
+    type = db.Column(ENUM('TRIP', 'ITINERARY', 'TESTIMONIAL'), nullable=False)
+    trip_id = db.Column(db.String(36), db.ForeignKey('trips.trip_id'), nullable=True)
     itinerary_id = db.Column(db.String(36), db.ForeignKey('itinerary.itinerary_id'), nullable=True)
     path = db.Column(db.String(100), nullable=False)
     upload_datetime = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
 
     def __init__(self, **kwargs):
-        self.media_id = str(uuid4())
+        self.media_id = kwargs.get('media_id', str(uuid4()))
+        self.type = kwargs.get('type', None)
+        self.trip_id = kwargs.get('trip_id', None)
         self.itinerary_id = kwargs.get('itinerary_id', None)
+        self.path = kwargs.get('path', None)
+        self.upload_datetime = kwargs.get('upload_datetime', None)
         self.media_type = kwargs.get('media_type', None)
         self.media_url = kwargs.get('media_url', None)
 

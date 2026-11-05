@@ -1,9 +1,11 @@
 from api.db import db
 from uuid import uuid4
 from sqlalchemy.dialects.mysql import TINYINT, SMALLINT, DECIMAL
+from flask import request
+import os 
 
 class Trip(db.Model):
-    __tablename__ = 'Trips'
+    __tablename__ = 'trips'
 
     trip_id = db.Column(db.String(36), primary_key=True, nullable=False)
     title = db.Column(db.String(100), nullable=False)
@@ -15,11 +17,15 @@ class Trip(db.Model):
     things_to_carry = db.Column(db.Text, nullable=True)
     price_per_head = db.Column(DECIMAL(10, 2), nullable=False)
     max_capacity = db.Column(SMALLINT(unsigned=True), nullable=False)
-    current_capacity = db.Column(SMALLINT(unsigned=True), nullable=False)
+    current_capacity = db.Column(SMALLINT(), nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     duration = db.Column(TINYINT(unsigned=True), nullable=False)
+    days = db.Column(TINYINT(unsigned=True), nullable=False)
+    nights = db.Column(TINYINT(unsigned=True), nullable=False)
     features = db.Column(db.Text, nullable=True)
+    cover_image = db.Column(db.String(36), nullable=False)
+    status = db.Column(db.Boolean, nullable=False)
 
     def __init__(self, **kwargs):
         self.trip_id = str(uuid4())
@@ -36,7 +42,11 @@ class Trip(db.Model):
         self.start_date = kwargs.get('start_date', None)
         self.end_date = kwargs.get('end_date', None)
         self.duration = kwargs.get('duration', 0)
+        self.days = kwargs.get('days', 0)
+        self.nights = kwargs.get('nights', 0)
         self.features = kwargs.get('features', None)
+        self.cover_image = kwargs.get('cover_image', "")
+        self.status = kwargs.get('status', True)
     
     def serialize(self):
         return {
@@ -54,5 +64,10 @@ class Trip(db.Model):
             'start_date': self.start_date.isoformat(),
             'end_date': self.end_date.isoformat(),
             'duration': self.duration,
-            'features': self.features
+            'days': self.days,
+            'nights': self.nights,
+            'features': self.features,
+            'cover_image': self.cover_image,
+            'cover_image_url': f"{request.host_url.rstrip('/')}/api/{os.environ.get('VERSION', 'v1')}/media/{self.cover_image}" if self.cover_image else None,
+            'status': self.status
         }
